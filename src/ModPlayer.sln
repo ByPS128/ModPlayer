@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModPlayer", "ModPlayer\ModPlayer.csproj", "{AB8101E0-5308-4521-AF03-B926FAF8BDE0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{ECBFE481-BE3A-4C3C-BA3F-2C24E11E1052}"
+	ProjectSection(SolutionItems) = preProject
+		..\.dockerignore = ..\.dockerignore
+		..\.editorconfig = ..\.editorconfig
+		..\.gitignore = ..\.gitignore
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB8101E0-5308-4521-AF03-B926FAF8BDE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB8101E0-5308-4521-AF03-B926FAF8BDE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB8101E0-5308-4521-AF03-B926FAF8BDE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB8101E0-5308-4521-AF03-B926FAF8BDE0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
