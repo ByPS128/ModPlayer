@@ -177,29 +177,29 @@ public sealed partial class ModPlay
     private void ParseBasincProperties(Span<byte> modFileDataSpan, ref int index)
     {
         // The number of instruments, channels depends on whether the sign type, like M.K., FLT8, 8CHN, etc.
-        var sign = Encoding.ASCII.GetString(modFileDataSpan.Slice(1080, 4));
-        if (sign is "M.K." or "FLT4" or "4CH")
+        _modKind = Encoding.ASCII.GetString(modFileDataSpan.Slice(1080, 4));
+        if (_modKind is "M.K." or "FLT4" or "4CH")
         {
             _instrumentsCount = 32;
             _numberOfTracks = 4;
             _rowsCount = 64;
             _ordersCount = 128;
         }
-        else if (sign is "6CHN")
+        else if (_modKind is "6CHN")
         {
             _instrumentsCount = 32;
             _numberOfTracks = 6;
             _rowsCount = 64;
             _ordersCount = 128;
         }
-        else if (sign is "8CHN" or "FLT8")
+        else if (_modKind is "8CHN" or "FLT8")
         {
             _instrumentsCount = 32;
             _numberOfTracks = 8;
             _rowsCount = 64;
             _ordersCount = 128;
         }
-        else if (sign is "12CH")
+        else if (_modKind is "12CH")
         {
             _instrumentsCount = 32;
             _numberOfTracks = 12;

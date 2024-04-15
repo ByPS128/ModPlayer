@@ -109,6 +109,22 @@ public sealed partial class ModPlay
     }
 
     /// <inheritdoc />
+    public void DescribeSong(Action<string, string?>? callback)
+    {
+        if (callback is null)
+        {
+            return;
+        }
+
+        callback("Title", _songName);
+        callback("Kind", _modKind);
+        for (int i = 1; i < _instrumentsCount; i++)
+        {
+            callback($"instrument {i:X2}", _instruments[i]?.Name);
+        }
+    }
+
+    /// <inheritdoc />
     public void WriteWaveData(Stream waveOut, int milliseconds)
     {
         var bufferBytesPerPosition = (WaveFormat.BitsPerSample == 8 ? 1 : 2) * WaveFormat.Channels;

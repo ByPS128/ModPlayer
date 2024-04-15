@@ -33,6 +33,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
 
     private string _modFileName; // Name of the mod
     private string _songName; // Name of song, read from the file
+    private string _modKind; // Type of mod file (M.K., FLT8, 8CHN, etc.)
 
     private int _numberOfTracks; // Number of tracks in this mod
     private int _order; // Current order being played
@@ -133,7 +134,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
 
                         // Set up for next row (effect might change these values later)
                         _row++;
-                        if (_row >= 64)
+                        if (_row >= _rowsCount)
                         {
                             _row = 0;
                             _order++;

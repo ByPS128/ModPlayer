@@ -11,9 +11,9 @@ public sealed class Program
     //private static string modFileNameToPlay = "Mods\\testlast.mod";
     //private static string modFileNameToPlay = "Mods\\brimble-superfrog-title.mod";
     //private static readonly string modFileNameToPlay = "Mods\\lethald2.mod";
-    private static string modFileNameToPlay = "Mods\\desert1.mod";
+    //private static string modFileNameToPlay = "Mods\\desert1.mod";
     //private static string modFileNameToPlay = "Mods\\desert2.mod";
-    //private static string modFileNameToPlay = "Mods\\desert3.mod";
+    private static string modFileNameToPlay = "Mods\\desert3.mod";
     //private static string modFileNameToPlay = "Mods\\TestFiles\\Vibrato\\vibrato-04.mod";
 
     public static async Task Main(string[] args)
@@ -56,10 +56,11 @@ public sealed class Program
     {
         var modPlayer = new ModPlay();
         modPlayer.LoadFromFile(modFileNameToPlay);
+        modPlayer.DescribeSong((item, value) => Console.WriteLine($"{item}: {value}"));
         modPlayer.PrepareToPlay(44100, 16, ChannelsVariation.StereoPan, 64);
         modPlayer.SetStereoPan(50);
         modPlayer.WriteInstrumentsToFiles();
-        // modPlayer.JumpToOrder(6);
+        //modPlayer.JumpToOrder(80);
         // modPlayer.TurnOnOffAllChannels(false);
         // modPlayer.TurnOnOffChannel(1, true);
         modPlayer.Play();
