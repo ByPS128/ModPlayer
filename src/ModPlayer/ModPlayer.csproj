@@ -97,6 +97,9 @@
       <None Update="Mods\kefrens-remix.mod">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+      <None Update="Mods\TestFiles\LaxityTracker\HiddenPart.unic">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
