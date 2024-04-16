@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using ModPlayer.SongLoaders;
+using NAudio.Wave;
 
 namespace ModPlayer;
 
@@ -13,8 +14,11 @@ public sealed class Program
     //private static readonly string modFileNameToPlay = "Mods\\lethald2.mod";
     //private static string modFileNameToPlay = "Mods\\desert1.mod";
     //private static string modFileNameToPlay = "Mods\\desert2.mod";
-    private static string modFileNameToPlay = "Mods\\desert3.mod";
+    //private static string modFileNameToPlay = "Mods\\desert3.mod";
     //private static string modFileNameToPlay = "Mods\\TestFiles\\Vibrato\\vibrato-04.mod";
+    //private static string modFileNameToPlay = "Mods\\TestFiles\\LaxityTracker\\HiddenPart.unic";
+    private static string modFileNameToPlay = "Mods\\TestFiles\\FastTracker\\8_belle-helene-8ch.md8";
+    //private static string modFileNameToPlay = "Mods\\TestFiles\\FastTracker\\pitzdahero-6ch).ft";
 
     public static async Task Main(string[] args)
     {
@@ -54,12 +58,13 @@ public sealed class Program
 
     private static Task PlayAudioInfinitely(CancellationToken cancellationToken)
     {
+        var song = SongLoader.LoadFromFile(modFileNameToPlay);
+        song.DescribeSong((item, value) => Console.WriteLine($"{item}: {value}"));
+        
         var modPlayer = new ModPlay();
-        modPlayer.LoadFromFile(modFileNameToPlay);
-        modPlayer.DescribeSong((item, value) => Console.WriteLine($"{item}: {value}"));
-        modPlayer.PrepareToPlay(44100, 16, ChannelsVariation.StereoPan, 64);
+        modPlayer.PrepareToPlay(song, 44100, 16, ChannelsVariation.StereoPan, 32);
         modPlayer.SetStereoPan(50);
-        modPlayer.WriteInstrumentsToFiles();
+        SongTools.WriteInstrumentsToFiles(song);
         //modPlayer.JumpToOrder(80);
         // modPlayer.TurnOnOffAllChannels(false);
         // modPlayer.TurnOnOffChannel(1, true);
@@ -86,9 +91,10 @@ public sealed class Program
 
     private static Task CreateWaveFile(string modFileName, int milliseconds, string fileName)
     {
+        var song = SongLoader.LoadFromFile(modFileNameToPlay);
         var modPlayer = new ModPlay();
-        modPlayer.LoadFromFile(modFileName);
-        modPlayer.PrepareToPlay(44100, 16, ChannelsVariation.Stereo, 64);
+        modPlayer.PrepareToPlay(song, 44100, 16, ChannelsVariation.StereoPan, 64);
+
         using var waveOut = new WaveFileWriter(fileName, modPlayer.WaveFormat);
         modPlayer.WriteWaveData(waveOut, milliseconds);
 

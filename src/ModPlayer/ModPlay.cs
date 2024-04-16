@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using ModPlayer.Models;
+using ModPlayer.SongLoaders;
 using NAudio.Wave;
 
 namespace ModPlayer;
@@ -14,39 +15,34 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
     /// </summary>
     private const int FractionalBits = 10;
 
-    private const int SinusTable64Low = 0;
-    private const int SinusTable64High = 64;
-
-    private const int VolumeMin = 0;
-    private const int VolumeMax = 64;
-
-    private readonly Dictionary<int, int> _periodsIndex;
+    private Song _song;
     private int _beatsPerMinute; // Beats-per-minute...controls length of each tick
     private int[] _bufferOfLeftChannel; // Used to delay the left  tracks when they're played to the right channel
     private int[] _bufferOfRightChannel; // Used to delay the right tracks when they're played to the left channel
-    private ChannelData[] _channels = null!;
+    //private ChannelData[] _channels = null!;
     private ChannelsVariation _channelsKind;
     private RowData _currentRow; // Pointer to the current row being played
-    private Instrument[] _instruments; // Array of instruments used in this mod
-    private int _instrumentsCount; // Number of instruments in this mod
-    private bool _isCurrentlyPlaying; // Set to true when a mod is being played
+    //private Instrument[] _instruments; // Array of instruments used in this mod
+    //private int _instrumentsCount; // Number of instruments in this mod
+    //private bool _isCurrentlyPlaying; // Set to true when a mod is being played
 
-    private string _modFileName; // Name of the mod
-    private string _songName; // Name of song, read from the file
-    private string _modKind; // Type of mod file (M.K., FLT8, 8CHN, etc.)
+    //private string _modFileName; // Name of the mod
+    //private string _songName; // Name of song, read from the file
+    //private string _modKind; // Type of mod file (M.K., FLT8, 8CHN, etc.)
 
-    private int _numberOfTracks; // Number of tracks in this mod
+    //private int _numberOfTracks; // Number of tracks in this mod
     private int _order; // Current order being played
-    private int[] _orders; // Array of orders in the song
-    private int _ordersCount;
+    //private int[] _orders; // Array of orders in the song
+    //private int _ordersCount;
     private int _patternDelay; // The number of repetitions of the same row of the pattern.
-    private Pattern[] _patterns; // Array of patterns in the song
-    private int _patternsCount; // Number of patterns in this mod
+    //private Pattern[] _patterns; // Array of patterns in the song
+    //private int _patternsCount; // Number of patterns in this mod
     private int _row; // Current row being played
-    private int _rowsCount;
-    private int _songLength; // Number of orders in the song
+    //private int _rowsCount;
+    //private int _songLength; // Number of orders in the song
     private int _speed; // Speed of mod being played
     private int _stereoPanValue;
+    private bool _isCurrentlyPlaying;
 
     /// <summary>
     ///     Surround sound is accomplished in part by mixing each channel into the other channel with a small
@@ -60,9 +56,10 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
     private TrackData[] _trackData = null!; // Stores info for each track being played
     private WaveOutEvent? _waveEvent; // The WaveOutEvent object used to play the mod
 
+    private int[][] _volumeTable = null!; 
+
     public ModPlay()
     {
-        _periodsIndex = CreatePeriodIndex();
     }
 
     public bool ResamplingEnabled { get; set; } = false;
@@ -72,6 +69,36 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
         Stop();
     }
 
+    /// <summary>
+    ///     This function causes the mod to start playing. It returns true if the mod was successfully started, or false if
+    ///     not.
+    /// </summary>
+    /// <returns></returns>
+    public void Play()
+    {
+        // See if I'm already playing
+        if (_isCurrentlyPlaying)
+        {
+            return;
+        }
+
+        // If our device is already open then close it
+        Stop();
+
+        // Open the playback device and start playing
+        var waveOut = new WaveOutEvent();
+        waveOut.Init(this);
+        waveOut.Play();
+        _isCurrentlyPlaying = true;
+    }
+
+    public void Stop()
+    {
+        _waveEvent?.Stop();
+        _waveEvent?.Dispose();
+        _waveEvent = null;
+    }
+    
     public WaveFormat WaveFormat { get; private set; }
 
     /// <summary>
@@ -130,15 +157,15 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                     else
                     {
                         // Get this row
-                        _currentRow = _patterns[_orders[_order]].Row[_row];
+                        _currentRow = _song.Patterns[_song.Orders[_order]].Row[_row];
 
                         // Set up for next row (effect might change these values later)
                         _row++;
-                        if (_row >= _rowsCount)
+                        if (_row >= _song.RowsPerPattern)
                         {
                             _row = 0;
                             _order++;
-                            if (_order >= _songLength)
+                            if (_order >= _song.Length)
                             {
                                 _order = 0;
                             }
@@ -277,34 +304,25 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
         return (samplesCount - samplesToMix) * bufferBytesPerPosition;
     }
 
-    /// <summary>
-    ///     This function causes the mod to start playing. It returns true if the mod was successfully started, or false if
-    ///     not.
-    /// </summary>
-    /// <returns></returns>
-    public void Play()
+    /// <inheritdoc />
+    public void SetMasterVolume(int volume)
     {
-        // See if I'm already playing
-        if (_isCurrentlyPlaying)
+        // Initialize my volume table
+        _volumeTable = new int[SongConstants.VolumeMax+1][];
+        for (var i = 0; i < SongConstants.VolumeMax+1; i++)
         {
-            return;
+            _volumeTable[i] = new int[256];
+            for (var j = 0; j < 256; j++)
+            {
+                var vol = j;
+                if (vol >= 128)
+                {
+                    vol -= 255 - 1;
+                }
+
+                _volumeTable[i][j] = volume * i * vol / SongConstants.VolumeMax;
+            }
         }
-
-        // If our device is already open then close it
-        Stop();
-
-        // Open the playback device and start playing
-        var waveOut = new WaveOutEvent();
-        waveOut.Init(this);
-        waveOut.Play();
-        _isCurrentlyPlaying = true;
-    }
-
-    public void Stop()
-    {
-        _waveEvent?.Stop();
-        _waveEvent?.Dispose();
-        _waveEvent = null;
     }
 
     private void UpdateRow()
@@ -313,7 +331,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
         var newrow = _row;
 
         // Loop through each track
-        for (var track = 0; track < _numberOfTracks; track++)
+        for (var track = 0; track < _song.NumberOfTracks; track++)
         {
             // Get note data
             var note = _currentRow.Note[track];
@@ -330,7 +348,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             if (instrumentNumber > 0)
             {
                 _trackData[track].InstrumentNumber = instrumentNumber;
-                _trackData[track].Volume = _instruments[instrumentNumber].Volume;
+                _trackData[track].Volume = _song.Instruments[instrumentNumber].Volume;
                 _trackData[track].MixVolume = _trackData[track].Volume;
                 if (effect != 3 && effect != 5)
                 {
@@ -359,7 +377,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                 {
                     // Remember the note
                     _trackData[track].PeriodIndex = note.PeriodIndex;
-                    _trackData[track].Period_tuned = ProTrackerPeriods[_trackData[track].PeriodIndex + _instruments[_trackData[track].InstrumentNumber].FineTune * 84];
+                    _trackData[track].Period_tuned = SongConstants.ProTrackerPeriods[_trackData[track].PeriodIndex + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84];
                 }
 
                 // If there is no instrument number or effect then we reset the position
@@ -400,7 +418,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                         break;
                     }
 
-                    var noteFrequencyInHz = ProTrackerPeriods[_trackData[track].PeriodIndex + _instruments[_trackData[track].InstrumentNumber].FineTune * 84];
+                    var noteFrequencyInHz = SongConstants.ProTrackerPeriods[_trackData[track].PeriodIndex + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84];
                     if (note.Period > 0)
                     {
                         _trackData[track].Porta = note.Period;
@@ -475,7 +493,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                 // Jump To Pattern
                 case 0x0B:
                     neworder = note.EffectParameters;
-                    if (neworder >= _songLength)
+                    if (neworder >= _song.Length)
                     {
                         neworder = 0;
                     }
@@ -496,13 +514,13 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                 // Break from current pattern
                 case 0x0D:
                     newrow = effectParameterX * 10 + effectParameterY;
-                    if (newrow > _rowsCount) // 63
+                    if (newrow >= _song.RowsPerPattern) // 63
                     {
                         newrow = 0;
                     }
 
                     neworder = _order + 1;
-                    if (neworder >= _songLength)
+                    if (neworder >= _song.Length)
                     {
                         neworder = 0;
                     }
@@ -539,10 +557,10 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
 
                         // Set finetune
                         case 0x05:
-                            _instruments[instrumentNumber].FineTune = effectParameterY;
-                            if (_instruments[instrumentNumber].FineTune > 7)
+                            _song.Instruments[instrumentNumber].FineTune = effectParameterY;
+                            if (_song.Instruments[instrumentNumber].FineTune > 7)
                             {
-                                _instruments[instrumentNumber].FineTune -= 16;
+                                _song.Instruments[instrumentNumber].FineTune -= 16;
                             }
 
                             break;
@@ -659,7 +677,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
 
                 // If anything makes it this far then we have a problem
                 default:
-                    Console.WriteLine($"Oh oh! Weird effect code {note.Effect:X} at pattern {_orders[_order]} row {_row} track {track}");
+                    Console.WriteLine($"Oh oh! Weird effect code {note.Effect:X} at pattern {_song.Orders[_order]} row {_row} track {track}");
                     break;
             }
 
@@ -678,7 +696,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
     private void UpdateEffects()
     {
         // Loop through each channel
-        for (var track = 0; track < _numberOfTracks; track++)
+        for (var track = 0; track < _song.NumberOfTracks; track++)
         {
             // Get note data
             var note = _currentRow.Note[track];
@@ -703,10 +721,10 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                                 period = _trackData[track].Period_tuned;
                                 break;
                             case 1:
-                                period = ProTrackerPeriods[_trackData[track].PeriodIndex + effectParameterX + _instruments[_trackData[track].InstrumentNumber].FineTune * 84];
+                                period = SongConstants.ProTrackerPeriods[_trackData[track].PeriodIndex + effectParameterX + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84];
                                 break;
                             case 2:
-                                period = ProTrackerPeriods[_trackData[track].PeriodIndex + effectParameterY + _instruments[_trackData[track].InstrumentNumber].FineTune * 84];
+                                period = SongConstants.ProTrackerPeriods[_trackData[track].PeriodIndex + effectParameterY + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84];
                                 break;
                         }
 
@@ -837,8 +855,8 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             return;
         }
 
-        var sineIndex = (_trackData[track].SinePosition & (SinusTable64High - SinusTable64Low)) + SinusTable64Low;
-        var vibratoAdjustment = Clip((_trackData[track].TremoloDepth * SineTable64[sineIndex]) >> 6, VolumeMin, VolumeMax); // div64
+        var sineIndex = (_trackData[track].SinePosition & (SongConstants.SinusTable64High - SongConstants.SinusTable64Low)) + SongConstants.SinusTable64Low;
+        var vibratoAdjustment = Clip((_trackData[track].TremoloDepth * SongConstants.SineTable64[sineIndex]) >> 6, SongConstants.VolumeMin, SongConstants.VolumeMax); // div64
 
         _trackData[track].MixVolume = vibratoAdjustment;
         _trackData[track].SinePosition += _trackData[track].TremoloSpeed;
@@ -856,7 +874,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
         switch (_trackData[track].VibratoWaveForm)
         {
             case 0: // sine (default)                                       //   /\    /\     (2 cycles shown)
-                vibratoValue = SineTable32[Math.Abs(sineIndex) + /*1*/ +0]; //     \/    \/
+                vibratoValue = SongConstants.SineTable32[Math.Abs(sineIndex) + /*1*/ +0]; //     \/    \/
                 break;
 
             case 1: // ramp down                      //   | \   | \
@@ -880,7 +898,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
 
             default:
                 // warning (variable might not have been initialized)
-                vibratoValue = SineTable32[Math.Abs(sineIndex) + 1];
+                vibratoValue = SongConstants.SineTable32[Math.Abs(sineIndex) + 1];
                 break;
         }
 
@@ -941,7 +959,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             return;
         }
 
-        _trackData[track].Volume = Clip(_trackData[track].Volume + amount + amount, VolumeMin, VolumeMax);
+        _trackData[track].Volume = Clip(_trackData[track].Volume + amount + amount, SongConstants.VolumeMin, SongConstants.VolumeMax);
     }
 
     private void SlideVolume(int track)
@@ -968,15 +986,15 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
         }
 
         // Loop through each channel and process note data
-        for (var track = 0; track < _numberOfTracks; track++)
+        for (var track = 0; track < _song.NumberOfTracks; track++)
         {
-            if (_channels[track].IsOn is false)
+            if (_song.Channels[track].IsOn is false)
             {
                 continue;
             }
 
             // Make sure I'm actually playing something
-            if (_trackData[track].InstrumentNumber <= 0 || _trackData[track].InstrumentNumber > _instrumentsCount)
+            if (_trackData[track].InstrumentNumber <= 0 || _trackData[track].InstrumentNumber > _song.InstrumentsCount)
             {
                 continue;
             }
@@ -988,7 +1006,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             }
 
             // Make sure this instrument actually contains sound data
-            if (_instruments[_trackData[track].InstrumentNumber].Data?.Length == 0)
+            if (_song.Instruments[_trackData[track].InstrumentNumber].Data?.Length == 0)
             {
                 continue;
             }
@@ -1005,7 +1023,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                 continue;
             }
 
-            var instrument = _instruments[_trackData[track].InstrumentNumber];
+            var instrument = _song.Instruments[_trackData[track].InstrumentNumber];
             var instrumentLength = instrument.Length << FractionalBits;
             var instrumentLoopStart = instrument.LoopStart << FractionalBits;
             var instrumentLoopEnd = (instrument.LoopStart + instrument.LoopLength) << FractionalBits;
@@ -1015,7 +1033,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             }
 
             var inInstrumentPosition = _trackData[track].InInstrumentPosition;
-            var trackVolumeTable = VolumeTable[_trackData[track].MixVolume];
+            var trackVolumeTable = _volumeTable[_trackData[track].MixVolume];
             var mixPosition = 0;
 
             var mixed = (track & 3) == 0 || (track & 3) == 3 ? leftChannelBuffer : rightChannelBuffer;
@@ -1069,8 +1087,8 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                     int volumeAdjustedSampleValue;
                     if (ResamplingEnabled)
                     {
-                        var sample1 = trackVolumeTable[_instruments[_trackData[track].InstrumentNumber].Data[inInstrumentPosition >> FractionalBits]];
-                        var sample2 = trackVolumeTable[_instruments[_trackData[track].InstrumentNumber].Data[(inInstrumentPosition >> FractionalBits) + 1]];
+                        var sample1 = trackVolumeTable[_song.Instruments[_trackData[track].InstrumentNumber].Data[inInstrumentPosition >> FractionalBits]];
+                        var sample2 = trackVolumeTable[_song.Instruments[_trackData[track].InstrumentNumber].Data[(inInstrumentPosition >> FractionalBits) + 1]];
                         var frac1 = inInstrumentPosition & ((1 << FractionalBits) - 1);
                         var frac2 = (1 << FractionalBits) - frac1;
                         volumeAdjustedSampleValue = (sample1 * frac2 + sample2 * frac1) >> FractionalBits;

@@ -1,17 +1,42 @@
-﻿using System.Buffers;
-using System.Text;
-using ModPlayer.Models;
-using NAudio.Wave;
+﻿namespace ModPlayer;
 
-namespace ModPlayer;
-
-public partial class ModPlay
+public static class SongConstants
 {
+    internal const int SinusTable64Low = 0;
+    internal const int SinusTable64High = 64;
+
+    public const int VolumeMin = 0;
+    public const int VolumeMax = 64;
+
+    internal static IReadOnlyDictionary<int, int> PeriodsIndex => _periodsIndex;
+
+    static SongConstants()
+    {
+        _periodsIndex = CreatePeriodIndex();
+    }
+
+    private static readonly Dictionary<int, int> _periodsIndex;
+
+    /// <summary>
+    ///     Creates a quick seek and get index by period.
+    /// </summary>
+    /// <returns>Constructed index instance</returns>
+    private static Dictionary<int, int>? CreatePeriodIndex()
+    {
+        var index = new Dictionary<int, int>();
+        for (var i = 0; i < ProTrackerPeriods.Length; i++)
+        {
+            index[ProTrackerPeriods[i]] = i;
+        }
+
+        return index;
+    }
+
     /// <summary>
     ///     Sinusoid on 32 steps in the range 0 to 255.
     ///     Used for vibrato.
     /// </summary>
-    private static byte[] SineTable32 { get; } = new byte[32]
+    internal static byte[] SineTable32 { get; } = new byte[32]
     {
         000, 024, 049, 074, 097, 120, 141, 161,
         180, 197, 212, 224, 235, 244, 250, 253,
@@ -23,7 +48,7 @@ public partial class ModPlay
     ///     Sinusoid on 64 steps in the range -255 to 255.
     ///     Used for tremolo.
     /// </summary>
-    private static int[] SineTable64 { get; } = new int[64]
+    internal static int[] SineTable64 { get; } = new int[64]
     {
         000, 024, 049, 074, 097, 120, 141, 161,
         180, 197, 212, 224, 235, 244, 250, 253,
@@ -35,9 +60,7 @@ public partial class ModPlay
         -180, -161, -141, -120, -097, -074, -049, -024
     };
 
-    private int[][] VolumeTable { get; } = new int [65][];
-
-    private static ushort[] ProTrackerPeriods { get; } = new ushort[84 * 16]
+    internal static ushort[] ProTrackerPeriods { get; } = new ushort[84 * 16]
     {
         // Finetune -8
         3628, 3424, 3232, 3048, 2880, 2712, 2560, 2416, 2280, 2152, 2032, 1920,
@@ -168,4 +191,6 @@ public partial class ModPlay
         102, 96, 90, 85, 80, 76, 72, 68, 64, 60, 57, 54,
         51, 48, 45, 42, 40, 38, 36, 34, 32, 30, 28, 27
     };
+
 }
+

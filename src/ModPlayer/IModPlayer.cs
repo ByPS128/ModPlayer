@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using ModPlayer.Models;
+using NAudio.Wave;
 
 namespace ModPlayer;
 
@@ -19,10 +20,6 @@ public interface IModPlayer
     /// <param name="newStereoPanValue">Range 0..100</param>
     void SetStereoPan(int newStereoPanValue);
 
-    void TurnOnOffChannel(int trackNumber, bool setOn);
-
-    void TurnOnOffAllChannels(bool setOn);
-
     void JumpToOrder(int newOrderNumber);
 
     /// <summary>
@@ -31,9 +28,7 @@ public interface IModPlayer
     /// <param name="volume"></param>
     void SetMasterVolume(int volume);
 
-    void PrepareToPlay(int playbackFrequencyInHz, int bitsPerSample, ChannelsVariation channelsKind, int volumeLevel);
-
-    void WriteInstrumentsToFiles();
+    void PrepareToPlay(Song song, int playbackFrequencyInHz, int bitsPerSample, ChannelsVariation channelsKind, int volumeLevel);
 
     void WriteWaveData(Stream waveOut, int milliseconds);
 }
