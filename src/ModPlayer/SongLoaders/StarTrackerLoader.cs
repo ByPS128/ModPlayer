@@ -23,19 +23,14 @@ public sealed class StarTrackerLoader : ModLoader
     protected override void SetupBasicProperties()
     {
         _song.SourceFormat = "StarTracker";
-        if (_song.Mark is "FLT4")
+        _song.InstrumentsCount = 32;
+        _song.RowsPerPattern = 64;
+        _song.OrdersCount = 128;
+        _song.NumberOfTracks = _song.Mark switch
         {
-            _song.InstrumentsCount = 32;
-            _song.NumberOfTracks = 4;
-            _song.RowsPerPattern = 64;
-            _song.OrdersCount = 128;
-        }
-        else if (_song.Mark is "FLT8")
-        {
-            _song.InstrumentsCount = 32;
-            _song.NumberOfTracks = 8;
-            _song.RowsPerPattern = 64;
-            _song.OrdersCount = 128;
-        }
+            "FLT4" => 4,
+            "FLT8" => 8,
+            _      => throw new ApplicationException($"Unsupported StarTracker file format: '{_song.Mark}'.")
+        };
     }
 }

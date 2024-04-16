@@ -23,12 +23,14 @@ public sealed class OctalyzerLoader : ModLoader
     protected override void SetupBasicProperties()
     {
         _song.SourceFormat = "Octalyzer";
-        if (_song.Mark is "OKTA" or "CD81")
+        if (_song.Mark is not ("OKTA" or "CD81"))
         {
-            _song.InstrumentsCount = 32;
-            _song.NumberOfTracks = 8;
-            _song.RowsPerPattern = 64;
-            _song.OrdersCount = 128;
+            return;
         }
+
+        _song.InstrumentsCount = 32;
+        _song.NumberOfTracks = 8;
+        _song.RowsPerPattern = 64;
+        _song.OrdersCount = 128;
     }
 }

@@ -23,47 +23,18 @@ public sealed class FastTrackerLoader : ModLoader
     protected override void SetupBasicProperties()
     {
         _song.SourceFormat = "FastTracker";
-        if (_song.Mark is "4CHN")
+        _song.InstrumentsCount = 32;
+        _song.RowsPerPattern = 64;
+        _song.OrdersCount = 128;
+        _song.NumberOfTracks = _song.Mark switch
         {
-            _song.InstrumentsCount = 32;
-            _song.NumberOfTracks = 4;
-            _song.RowsPerPattern = 64;
-            _song.OrdersCount = 128;
-        }
-        else if (_song.Mark is "6CHN")
-        {
-            _song.InstrumentsCount = 32;
-            _song.NumberOfTracks = 6;
-            _song.RowsPerPattern = 64;
-            _song.OrdersCount = 128;
-        }
-        else if (_song.Mark is "8CHN")
-        {
-            _song.InstrumentsCount = 32;
-            _song.NumberOfTracks = 8;
-            _song.RowsPerPattern = 64;
-            _song.OrdersCount = 128;
-        }
-        else if (_song.Mark is "12CN")
-        {
-            _song.InstrumentsCount = 32;
-            _song.NumberOfTracks = 12;
-            _song.RowsPerPattern = 64;
-            _song.OrdersCount = 128;
-        }
-        else if (_song.Mark is "16CN")
-        {
-            _song.InstrumentsCount = 32;
-            _song.NumberOfTracks = 16;
-            _song.RowsPerPattern = 64;
-            _song.OrdersCount = 128;
-        }
-        else if (_song.Mark is "32CN")
-        {
-            _song.InstrumentsCount = 32;
-            _song.NumberOfTracks = 32;
-            _song.RowsPerPattern = 64;
-            _song.OrdersCount = 128;
-        }
+            "4CHN" => 4,
+            "6CHN" => 6,
+            "8CHN" => 8,
+            "12CN" => 12,
+            "16CN" => 16,
+            "32CN" => 32,
+            _      => throw new ApplicationException($"Unsupported FastTracker file format: '{_song.Mark}'.")
+        };
     }
 }

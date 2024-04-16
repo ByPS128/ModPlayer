@@ -46,8 +46,8 @@ public class ModLoader : Loaderbase, ISongLoader
         _song.Name = Encoding.ASCII.GetString(songData.Slice(index, 20));
         index += 20;
 
-        SetupBasicProperties();
         _song.TrackData = new TrackData[_song.NumberOfTracks];
+        SetupBasicProperties();
         SetupChannels();
         ParseInstruments(songData, ref index);
         ReadSongData(songData, ref index);
@@ -72,7 +72,7 @@ public class ModLoader : Loaderbase, ISongLoader
         _song.SourceFormat = "Protracker";
         _song.NumberOfTracks = 4;
         _song.RowsPerPattern = 64;
-        _song.InstrumentsCount = 31;
+        _song.InstrumentsCount = 32;
         _song.OrdersCount = 128;
     }
 
@@ -170,7 +170,15 @@ public class ModLoader : Loaderbase, ISongLoader
         if (period != 0)
         {
             noteData.Period = period;
-            noteData.PeriodIndex = SongConstants.PeriodsIndex[period];
+            if (SongConstants.PeriodsIndex.TryGetValue(period, out var periodIndex))
+            {
+                noteData.PeriodIndex = periodIndex;
+            }
+            else
+            {
+                Console.WriteLine($"Period {period} not found in the index.");
+                noteData.PeriodIndex = -1;
+            }
         }
         else
         {
