@@ -106,6 +106,9 @@
       <None Update="Mods\TestFiles\FastTracker\8_belle-helene-8ch.md8">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+      <None Update="Mods\TestFiles\LaxityTracker2\HiddenPart.unic">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

@@ -11,7 +11,7 @@ public record Song
     public TrackData[] TrackData { get; internal set; }
     public ChannelData[] Channels { get; internal set; }
     public Instrument[] Instruments { get; internal set; }
-    public byte Length { get; internal set; }
+    public int Length { get; internal set; }
     public int PatternsCount { get; internal set; }
     public int[] Orders { get; internal set; }
     public Pattern[] Patterns { get; internal set; }

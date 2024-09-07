@@ -28,6 +28,20 @@ public sealed partial class ModPlay
         _stereoPanValue = newStereoPanValue;
     }
 
+    public void SetEqualizer(int numberOfBands)
+    {
+        if (numberOfBands <= 0)
+        {
+            NumberOfBands = 0;
+            Equalizer = null;
+
+            return;
+        }
+
+        NumberOfBands = numberOfBands;
+        Equalizer = new Equalizer(WaveFormat.SampleRate, numberOfBands);
+    }
+    
     /// <inheritdoc />
     public void PrepareToPlay(Song song, int playbackFrequencyInHz, int bitsPerSample, ChannelsVariation channelsKind, int volumeLevel)
     {

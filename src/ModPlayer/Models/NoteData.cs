@@ -29,4 +29,7 @@ public record NoteData
     ///     Used to store control parameters for the various effects
     /// </summary>
     public int EffectParameters { get; set; }
+
+    public int EffectParameterX { get; set; }
+    public int EffectParameterY { get; set; }
 }

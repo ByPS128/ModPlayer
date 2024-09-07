@@ -12,6 +12,7 @@ public static class SongLoader
         _loaders.Add(new FastTrackerLoader());        
         _loaders.Add(new StarTrackerLoader());        
         _loaders.Add(new OctalyzerLoader());        
+        _loaders.Add(new UnicLoader());        
     }
 
      public static Song LoadFromFile(string songFileName)

@@ -56,7 +56,10 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
     private TrackData[] _trackData = null!; // Stores info for each track being played
     private WaveOutEvent? _waveEvent; // The WaveOutEvent object used to play the mod
 
-    private int[][] _volumeTable = null!; 
+    private int[][] _volumeTable = null!;
+
+    internal int NumberOfBands = 0;
+    internal Equalizer? Equalizer;
 
     public ModPlay()
     {
@@ -101,6 +104,16 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
     
     public WaveFormat WaveFormat { get; private set; }
 
+    public void SetEqualizerGain(int bandIndex, float gain)
+    {
+        if (Equalizer is null)
+        {
+            return;
+        }
+
+        Equalizer.SetGain(bandIndex, gain);
+    }
+    
     /// <summary>
     ///     NAudio will call this function when it needs more data to play
     /// </summary>
@@ -341,8 +354,8 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             var period = note.Period;
             var effect = note.Effect;
             var effectParameters = note.EffectParameters;
-            var effectParameterX = effectParameters >> 4; // effect parameter x
-            var effectParameterY = effectParameters & 0xF; // effect parameter y
+            var effectParameterX = note.EffectParameterX;    
+            var effectParameterY = note.EffectParameterY;
 
             // Are we changing the instrument being played?
             if (instrumentNumber > 0)
@@ -375,9 +388,18 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                 // looked up amiga value + or - any finetune
                 if (effect != 3 && effect != 5)
                 {
-                    // Remember the note
-                    _trackData[track].PeriodIndex = note.PeriodIndex;
-                    _trackData[track].Period_tuned = SongConstants.ProTrackerPeriods[_trackData[track].PeriodIndex + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84];
+                    // TOOD - is this if necessary?
+                    if (_trackData[track].InstrumentNumber > 0)
+                    {
+                        // Remember the note
+                        _trackData[track].PeriodIndex = note.PeriodIndex;
+                        _trackData[track].Period_tuned = SongConstants.ProTrackerPeriods[_trackData[track].PeriodIndex + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84];
+                    }
+                    else
+                    {
+                        _trackData[track].PeriodIndex = -1;
+                        _trackData[track].Period_tuned = 0;
+                    }
                 }
 
                 // If there is no instrument number or effect then we reset the position
@@ -704,8 +726,8 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             // Parse it
             var effect = note.Effect; // grab the effect number
             var effectParameters = note.EffectParameters; // grab the effect parameter
-            var effectParameterX = effectParameters >> 4; // grab the effect parameter x
-            var effectParameterY = effectParameters & 0xF; // grab the effect parameter y
+            var effectParameterX = note.EffectParameterX;
+            var effectParameterY = note.EffectParameterY;
 
             // Process it
             switch (effect)
@@ -1106,6 +1128,12 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
 
             // Save current position
             _trackData[track].InInstrumentPosition = inInstrumentPosition;
+        }
+
+        // Aplikace ekvalizéru na smíchané vzorky
+        if (Equalizer is not null)
+        {
+            Equalizer.ApplyEqualization(leftChannelBuffer, rightChannelBuffer, samplesCount);
         }
     }
 }
