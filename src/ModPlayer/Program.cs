@@ -5,8 +5,8 @@ namespace ModPlayer;
 
 public sealed class Program
 {
-    private static string modFileNameToPlay = "Mods\\space_debris.mod";
-    //private static string modFileNameToPlay = "Mods\\klisje.mod";
+    //private static string modFileNameToPlay = "Mods\\space_debris.mod";
+    private static string modFileNameToPlay = "Mods\\klisje.mod";
     //private static readonly string modFileNameToPlay = "Mods\\lotus2-title.mod";
     //private static string modFileNameToPlay = "Mods\\sahara.mod";
     //private static string modFileNameToPlay = "Mods\\testlast.mod";
@@ -67,6 +67,11 @@ public sealed class Program
         modPlayer.PrepareToPlay(song, 44100, 16, ChannelsVariation.StereoPan, 32);
         modPlayer.SetStereoPan(50);
         modPlayer.SetEqualizer(numberOfBands); // Inicializujeme ekvalizér
+        modPlayer.SetEqualizerGain(0, 24.0f);
+        modPlayer.SetEqualizerGain(1, 16.0f);
+        modPlayer.SetEqualizerGain(2, -6.0f);
+        modPlayer.SetEqualizerGain(3, 12.0f);
+        modPlayer.SetEqualizerGain(4, 19.0f);
         SongTools.WriteInstrumentsToFiles(song);
         //modPlayer.JumpToOrder(80);
         // modPlayer.TurnOnOffAllChannels(false);
@@ -83,8 +88,8 @@ public sealed class Program
         // Dynamická inicializace pole pro zisky
         var gains = new float[numberOfBands]; // Dynamicky podle počtu pásem
         const float gainStep = 1.0f; // Kolik přidávat/ubírat na zisku při každém stisknutí
-        const float minGain = -12.0f; // Minimální hodnota zisku
-        const float maxGain = 12.0f; // Maximální hodnota zisku
+        const float minGain = -24.0f; // Minimální hodnota zisku
+        const float maxGain = 24.0f; // Maximální hodnota zisku
 
         // A loop that runs until Ctrl+C is caught
         while (!cancellationToken.IsCancellationRequested)
