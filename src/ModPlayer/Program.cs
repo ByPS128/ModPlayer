@@ -5,21 +5,29 @@ namespace ModPlayer;
 
 public sealed class Program
 {
+    //private static string modFileNameToPlay = "Mods\\boesen.mod";
+    //private static string modFileNameToPlay = "Mods\\big_time_sensuality.mod";
+    //private static string modFileNameToPlay = "Mods\\chaos_engine_title.mod";
+    //private static string modFileNameToPlay = "Mods\\cndmcrrp.mod";
     //private static string modFileNameToPlay = "Mods\\space_debris.mod";
-    private static string modFileNameToPlay = "Mods\\klisje.mod";
-    //private static readonly string modFileNameToPlay = "Mods\\lotus2-title.mod";
+    //private static string modFileNameToPlay = "Mods\\klisje.mod";
+    //private static string modFileNameToPlay = "Mods\\lotus2-title.mod";
+    //private static string modFileNameToPlay = "Mods\\loader.mod";
+    //private static string modFileNameToPlay = "Mods\\loadsong.mod";
     //private static string modFileNameToPlay = "Mods\\sahara.mod";
     //private static string modFileNameToPlay = "Mods\\testlast.mod";
     //private static string modFileNameToPlay = "Mods\\brimble-superfrog-title.mod";
-    //private static readonly string modFileNameToPlay = "Mods\\lethald2.mod";
+    //private static string modFileNameToPlay = "Mods\\lethald2.mod";
     //private static string modFileNameToPlay = "Mods\\desert1.mod";
     //private static string modFileNameToPlay = "Mods\\desert2.mod";
     //private static string modFileNameToPlay = "Mods\\desert3.mod";
+    //private static string modFileNameToPlay = "Mods\\the_loop_-_loader.mod";
+    //private static string modFileNameToPlay = "Mods\\tequila.mod";
     //private static string modFileNameToPlay = "Mods\\TestFiles\\Vibrato\\vibrato-04.mod";
     //private static string modFileNameToPlay = "Mods\\TestFiles\\LaxityTracker\\HiddenPart.unic";
     //private static string modFileNameToPlay = "Mods\\TestFiles\\FastTracker\\8_belle-helene-8ch.md8";
     //private static string modFileNameToPlay = "Mods\\TestFiles\\FastTracker\\pitzdahero-6ch).ft";
-    //private static string modFileNameToPlay = "Mods\\TestFiles\\LaxityTracker2\\HiddenPart.unic";
+    private static string modFileNameToPlay = "Mods\\TestFiles\\LaxityTracker2\\HiddenPart.unic";
 
     public static async Task Main(string[] args)
     {
@@ -65,6 +73,7 @@ public sealed class Program
         var numberOfBands = 5;
         var modPlayer = new ModPlay();
         modPlayer.PrepareToPlay(song, 44100, 16, ChannelsVariation.StereoPan, 32);
+        //modPlayer.PrepareToPlay(song, 22050, 8, ChannelsVariation.StereoPan, 32);
         modPlayer.SetStereoPan(50);
         modPlayer.SetEqualizer(numberOfBands); // Inicializujeme ekvalizér
         modPlayer.SetEqualizerGain(0, 24.0f);
@@ -72,6 +81,7 @@ public sealed class Program
         modPlayer.SetEqualizerGain(2, -6.0f);
         modPlayer.SetEqualizerGain(3, 12.0f);
         modPlayer.SetEqualizerGain(4, 19.0f);
+        modPlayer.Equalizer!.IsActive = false;
         SongTools.WriteInstrumentsToFiles(song);
         //modPlayer.JumpToOrder(80);
         // modPlayer.TurnOnOffAllChannels(false);

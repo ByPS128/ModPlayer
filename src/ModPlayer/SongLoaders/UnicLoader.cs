@@ -4,8 +4,8 @@ using ModPlayer.Models;
 namespace ModPlayer.SongLoaders;
 
 /// <summary>
-/// UNIC Tracker 2 - Created by Anders E. Hansen (Laxity / Kefrens) 1991-1993.
-/// Sometimes called UNIC Tracker 2, a module packer created by Anders Emil Hansen (Laxity), used in Kefrens demos.
+///     UNIC Tracker 2 - Created by Anders E. Hansen (Laxity / Kefrens) 1991-1993.
+///     Sometimes called UNIC Tracker 2, a module packer created by Anders Emil Hansen (Laxity), used in Kefrens demos.
 /// </summary>
 public sealed class UnicLoader : Loaderbase, ISongLoader
 {
@@ -14,7 +14,8 @@ public sealed class UnicLoader : Loaderbase, ISongLoader
     // UNIC Tracker does not store periods in the music file, but only indey do
     // frequency tables. That's why I have a conversion table here that is already
     // compatible with ProTracker frequency table.
-    private static ushort[] UnicPeriods { get; } = new ushort[61] {
+    private static ushort[] UnicPeriods { get; } = new ushort[61]
+    {
         0,
         856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453, // C-1 až B-1
         428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226, // C-2 až B-2
@@ -79,7 +80,7 @@ public sealed class UnicLoader : Loaderbase, ISongLoader
             _song.Instruments[i] = new Instrument();
             _song.Instruments[i].Name = Encoding.ASCII.GetString(songData.Slice(index, 20));
             index += 20;
-    
+
             // Read remaining info about instrument
             _song.Instruments[i].FineTune = -((short) ReadAmigaWord(songData, ref index) / 2);
             _song.Instruments[i].Length = ReadAmigaWord(songData, ref index);
@@ -88,7 +89,7 @@ public sealed class UnicLoader : Loaderbase, ISongLoader
             _song.Instruments[i].LoopStart = ReadAmigaWord(songData, ref index);
             _song.Instruments[i].LoopLength = ReadAmigaWord(songData, ref index);
             _song.Instruments[i].LoopEnd = _song.Instruments[i].LoopStart + _song.Instruments[i].LoopLength;
-    
+
             // Fix loop end in case it goes too far
             if (_song.Instruments[i].LoopEnd > _song.Instruments[i].Length)
             {
@@ -100,7 +101,7 @@ public sealed class UnicLoader : Loaderbase, ISongLoader
     private void ReadSongData(Span<byte> modFileDataSpan, ref int index)
     {
         // Read in song data
-        _song.Length =  modFileDataSpan[index++];
+        _song.Length = modFileDataSpan[index++];
         index++; // Skip over this byte, it's no longer used
         _song.PatternsCount = 0;
         _song.Orders = new int[_song.OrdersCount];
@@ -109,7 +110,7 @@ public sealed class UnicLoader : Loaderbase, ISongLoader
             _song.Orders[i] = modFileDataSpan[index++];
             _song.PatternsCount = Math.Max(_song.PatternsCount, _song.Orders[i]);
         }
-    
+
         _song.PatternsCount++;
     }
 
@@ -122,7 +123,7 @@ public sealed class UnicLoader : Loaderbase, ISongLoader
             // Set the number of rows for this pattern, for mods it's always 64
             _song.Patterns[pattern] = new Pattern();
             _song.Patterns[pattern].Row = new RowData[_song.RowsPerPattern];
-    
+
             // Loop through each row
             for (var row = 0; row < _song.RowsPerPattern; row++)
             {
@@ -162,41 +163,65 @@ public sealed class UnicLoader : Loaderbase, ISongLoader
 
         var noteData = new NoteData();
 
-        // Get the 4 bytes for this note
+        // Get the 3 bytes for this note
         int b0 = modFileDataSpan[index++];
         int b1 = modFileDataSpan[index++];
         int b2 = modFileDataSpan[index++];
-                    
-        // Parse them
+
+        // hodnota hex: $80 $40 $20 $10  $08 $04 $02 $01
+        // hodnota dec: 128 064 032 016  008 004 002 001
+        // bit:           8   7   6   5    4   3   2   1
+
+        // Parsuji zakodovana data kanalu.
         noteData.InstrumentNumber = ((b0 & 0x40) >> 2) | ((b1 & 0xF0) >> 4);
+        // noteData.InstrumentNumber = 8;
+        // if (noteData.InstrumentNumber == 5)
+        // {
+        //     noteData.InstrumentNumber = 0;
+        // }
+
+        // Kontrola, jestli neni v paternu instrument, ktery je mimo rozsah.
+        // To se stane, kdyz se ulozi XM jako MOD. XM ma az 64 instrumentu, ale unic jen 32
         if (noteData.InstrumentNumber > _song.InstrumentsCount)
         {
             noteData.PeriodIndex = -1;
         }
-
-        var period = b0 & 0x3F;
-        if (period > 0)
+        else
         {
-            if (period >= UnicPeriods.Length)
+            var period = b0 & 0x3F;
+            // Perioda v pojetí UNIC není forekvence, ale index ukazující do tabulky s frekvencemi.
+            // To je uplně obráceně, než jak to má MOD, ale také UNIC ušetřil 1 bajt na kanálu.
+            // Pro Amaigy to mohlo být zajímavé, zejména když se k distribuci používaly
+            //  diskety single density s kapacitou 720KB
+            if (period > 0)
             {
+                if (period >= UnicPeriods.Length)
+                {
+                }
+
+                noteData.Period = UnicPeriods[period];
+                // Index na skokovou tabulku ale použiju už tu pro MOD, protože v
+                //  mixéru již nechci řešit rozdílné formáty.
+                if (SongConstants.PeriodsIndex.TryGetValue(noteData.Period, out var periodIndex))
+                {
+                    noteData.PeriodIndex = periodIndex;
+                }
+                else
+                {
+                    // Neznámá perioda, nebudu jí vůbec hrát.
+                    Console.WriteLine($"Period {period} not found in the index.");
+                    noteData.PeriodIndex = -1;
+                }
             }
 
-            noteData.Period = UnicPeriods[period];
-            if (SongConstants.PeriodsIndex.TryGetValue(noteData.Period, out var periodIndex))
-            {
-                noteData.PeriodIndex = periodIndex;
-            }
-            else
-            {
-                Console.WriteLine($"Period {period} not found in the index.");
-                noteData.PeriodIndex = -1;
-            }
+            // Jaký efekt se bude používat?
+            noteData.Effect = b1 & 0x0F;
+            // Oba parametry dohromady dávají bajt, to se občas používá.
+            noteData.EffectParameters = b2;
+            // Někdy ale se tento bajt rozdělí na horní a dolní 4 bity a pak získám parametry x a y.
+            noteData.EffectParameterX = b2 >> 4; // Vyčtu paramet x.
+            noteData.EffectParameterY = b2 & 0x0F; // Vyčtu paramet y.
         }
-
-        noteData.Effect = b1 & 0x0F;
-        noteData.EffectParameters = b2;
-        noteData.EffectParameterX = b2 >> 4;
-        noteData.EffectParameterY = b2 & 0x0F;
 
         return noteData;
     }
@@ -210,19 +235,25 @@ public sealed class UnicLoader : Loaderbase, ISongLoader
             {
                 continue;
             }
-    
+
             var sourceSpan = modFileDataSpan.Slice(index, _song.Instruments[i].Length);
             var instrumentRawData = new byte[_song.Instruments[i].Length + 1]; // Allocate extra byte for anti-aliasing
-            sourceSpan.CopyTo(instrumentRawData); 
-            instrumentRawData[_song.Instruments[i].Length] = instrumentRawData[_song.Instruments[i].Length - 1];    
+            sourceSpan.CopyTo(instrumentRawData);
+            instrumentRawData[_song.Instruments[i].Length] = instrumentRawData[_song.Instruments[i].Length - 1];
             _song.Instruments[i].Data = instrumentRawData; // Assign the processed data back to the instrument
+
+            // for (var j = 0; j < _song.Instruments[i].Length - 2; j++)
+            // {
+            //     // Invert the instrument samples
+            //     _song.Instruments[i].Data[j] = (byte) (_song.Instruments[i].Data[j] ^ 0x80);
+            // }
 
             // Correct the loop end if needed.
             if (_song.Instruments[i].LoopEnd > _song.Instruments[i].Length)
             {
                 _song.Instruments[i].LoopEnd = _song.Instruments[i].Length;
             }
-   
+
             index += _song.Instruments[i].Length;
         }
     }

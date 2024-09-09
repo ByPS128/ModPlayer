@@ -127,11 +127,11 @@ public sealed partial class ModPlay
 
     private void Write8bitSamplesToBuffer(Span<int> local8BitBuffer, Span<byte> outputWaveBuffer)
     {
-        // I will convert the float samples to 16-bit integers and then to bytes
         for (var i = 0; i < local8BitBuffer.Length; i++)
         {
             var sample = local8BitBuffer[i];
             outputWaveBuffer[i] = (byte) (sample & 0xFF);
+            //outputWaveBuffer[i] = (byte) (sample ^ 0x80);
         }
     }
 
