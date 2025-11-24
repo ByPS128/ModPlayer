@@ -1028,7 +1028,8 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             }
 
             // Make sure this instrument actually contains sound data
-            if (_song.Instruments[_trackData[track].InstrumentNumber].Data?.Length == 0)
+            if (_song.Instruments[_trackData[track].InstrumentNumber].Data == null ||
+                _song.Instruments[_trackData[track].InstrumentNumber].Data.Length == 0)
             {
                 continue;
             }

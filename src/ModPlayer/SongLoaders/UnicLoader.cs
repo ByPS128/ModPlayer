@@ -74,6 +74,8 @@ public sealed class UnicLoader : Loaderbase, ISongLoader
     {
         // Read in all the instrument headers - instrument #0 is ignored !
         _song.Instruments = new Instrument[_song.InstrumentsCount];
+        // Initialize instrument #0 as empty to prevent null reference
+        _song.Instruments[0] = new Instrument { Data = Array.Empty<byte>(), Length = 0 };
         for (var i = 1; i < _song.InstrumentsCount; i++)
         {
             // Read the instrument name
