@@ -393,7 +393,15 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                     {
                         // Remember the note
                         _trackData[track].PeriodIndex = note.PeriodIndex;
-                        _trackData[track].Period_tuned = SongConstants.ProTrackerPeriods[_trackData[track].PeriodIndex + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84];
+                        var periodIndex = _trackData[track].PeriodIndex + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84;
+                        if (periodIndex >= 0 && periodIndex < SongConstants.ProTrackerPeriods.Length)
+                        {
+                            _trackData[track].Period_tuned = SongConstants.ProTrackerPeriods[periodIndex];
+                        }
+                        else
+                        {
+                            _trackData[track].Period_tuned = 0;
+                        }
                     }
                     else
                     {
@@ -440,7 +448,6 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                         break;
                     }
 
-                    var noteFrequencyInHz = SongConstants.ProTrackerPeriods[_trackData[track].PeriodIndex + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84];
                     if (note.Period > 0)
                     {
                         _trackData[track].Porta = note.Period;
@@ -743,10 +750,18 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                                 period = _trackData[track].Period_tuned;
                                 break;
                             case 1:
-                                period = SongConstants.ProTrackerPeriods[_trackData[track].PeriodIndex + effectParameterX + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84];
+                                var periodIndex1 = _trackData[track].PeriodIndex + effectParameterX + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84;
+                                if (periodIndex1 >= 0 && periodIndex1 < SongConstants.ProTrackerPeriods.Length)
+                                {
+                                    period = SongConstants.ProTrackerPeriods[periodIndex1];
+                                }
                                 break;
                             case 2:
-                                period = SongConstants.ProTrackerPeriods[_trackData[track].PeriodIndex + effectParameterY + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84];
+                                var periodIndex2 = _trackData[track].PeriodIndex + effectParameterY + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84;
+                                if (periodIndex2 >= 0 && periodIndex2 < SongConstants.ProTrackerPeriods.Length)
+                                {
+                                    period = SongConstants.ProTrackerPeriods[periodIndex2];
+                                }
                                 break;
                         }
 

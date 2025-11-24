@@ -24,8 +24,8 @@ public sealed class SongTools
             var baseFileName = song.SourceFileName ?? StringNormalizationExtensions.Normalize(song.Name);
             var instrumentFileName = Path.Combine("C:\\temp\\", Path.GetFileName(baseFileName) + $"-instrument{i:D2}.wav");
             using var waveOut = new WaveFileWriter(instrumentFileName, waveFormat);
-            var instrumentRawData = new byte[song.Instruments[i].Length - 1];
-            for (var j = 0; j < song.Instruments[i].Length - 1; j++)
+            var instrumentRawData = new byte[song.Instruments[i].Length];
+            for (var j = 0; j < song.Instruments[i].Length; j++)
             {
                 // Invert the instrument samples and copy into the instrumentRawData array
                 instrumentRawData[j] = (byte) (song.Instruments[i].Data[j] ^ 0x80);

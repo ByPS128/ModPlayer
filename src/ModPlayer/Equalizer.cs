@@ -106,6 +106,12 @@ public class Equalizer
     {
         float minFreq = 20f; // Dolní frekvence
         float maxFreq = 20000f; // Horní frekvence
+
+        if (numberOfBands <= 1)
+        {
+            return (minFreq + maxFreq) / 2f;
+        }
+
         return minFreq * (float)Math.Pow(maxFreq / minFreq, (float)bandIndex / (numberOfBands - 1));
     }
 }
