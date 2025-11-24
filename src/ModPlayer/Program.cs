@@ -19,14 +19,14 @@ public sealed class Program
     //private static string modFileNameToPlay = "Mods\\brimble-superfrog-title.mod";
     //private static string modFileNameToPlay = "Mods\\lethald2.mod";
     //private static string modFileNameToPlay = "Mods\\desert1.mod";
-    //private static string modFileNameToPlay = "Mods\\desert2.mod";
+    private static string modFileNameToPlay = "Mods\\desert2.mod";
     //private static string modFileNameToPlay = "Mods\\desert3.mod";
     //private static string modFileNameToPlay = "Mods\\the_loop_-_loader.mod";
     //private static string modFileNameToPlay = "Mods\\tequila.mod";
     //private static string modFileNameToPlay = "Mods\\TestFiles\\Vibrato\\vibrato-04.mod";
     //private static string modFileNameToPlay = "Mods\\TestFiles\\FastTracker\\8_belle-helene-8ch.md8";
     //private static string modFileNameToPlay = "Mods\\TestFiles\\FastTracker\\pitzdahero-6ch).ft";
-    private static string modFileNameToPlay = "Mods\\TestFiles\\LaxityTracker2\\HiddenPart.unic";
+    //private static string modFileNameToPlay = "Mods\\TestFiles\\LaxityTracker2\\HiddenPart.unic";
 
     public static async Task Main(string[] args)
     {

@@ -1,11 +1,10 @@
 ﻿using System.Buffers;
 using ModPlayer.Models;
-using ModPlayer.SongLoaders;
 using NAudio.Wave;
 
 namespace ModPlayer;
 
-// This pb file contains the most important parts of the code related to playing mod files.
+// This file contains the most important parts of the code related to playing mod files.
 public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
 {
     /// <summary>
@@ -17,29 +16,13 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
 
     private Song _song;
     private int _beatsPerMinute; // Beats-per-minute...controls length of each tick
-    private int[] _bufferOfLeftChannel; // Used to delay the left  tracks when they're played to the right channel
+    private int[] _bufferOfLeftChannel; // Used to delay the left tracks when they're played to the right channel
     private int[] _bufferOfRightChannel; // Used to delay the right tracks when they're played to the left channel
-    //private ChannelData[] _channels = null!;
     private ChannelsVariation _channelsKind;
     private RowData _currentRow; // Pointer to the current row being played
-    //private Instrument[] _instruments; // Array of instruments used in this mod
-    //private int _instrumentsCount; // Number of instruments in this mod
-    //private bool _isCurrentlyPlaying; // Set to true when a mod is being played
-
-    //private string _modFileName; // Name of the mod
-    //private string _songName; // Name of song, read from the file
-    //private string _modKind; // Type of mod file (M.K., FLT8, 8CHN, etc.)
-
-    //private int _numberOfTracks; // Number of tracks in this mod
     private int _order; // Current order being played
-    //private int[] _orders; // Array of orders in the song
-    //private int _ordersCount;
     private int _patternDelay; // The number of repetitions of the same row of the pattern.
-    //private Pattern[] _patterns; // Array of patterns in the song
-    //private int _patternsCount; // Number of patterns in this mod
     private int _row; // Current row being played
-    //private int _rowsCount;
-    //private int _songLength; // Number of orders in the song
     private int _speed; // Speed of mod being played
     private int _stereoPanValue;
     private bool _isCurrentlyPlaying;
@@ -101,7 +84,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
         _waveEvent?.Dispose();
         _waveEvent = null;
     }
-    
+
     public WaveFormat WaveFormat { get; private set; }
 
     public void SetEqualizerGain(int bandIndex, float gain)
@@ -113,7 +96,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
 
         Equalizer.SetGain(bandIndex, gain);
     }
-    
+
     /// <summary>
     ///     NAudio will call this function when it needs more data to play
     /// </summary>
@@ -321,8 +304,8 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
     public void SetMasterVolume(int volume)
     {
         // Initialize my volume table
-        _volumeTable = new int[SongConstants.VolumeMax+1][];
-        for (var i = 0; i < SongConstants.VolumeMax+1; i++)
+        _volumeTable = new int[SongConstants.VolumeMax + 1][];
+        for (var i = 0; i < SongConstants.VolumeMax + 1; i++)
         {
             _volumeTable[i] = new int[256];
             for (var j = 0; j < 256; j++)
@@ -354,7 +337,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             var period = note.Period;
             var effect = note.Effect;
             var effectParameters = note.EffectParameters;
-            var effectParameterX = note.EffectParameterX;    
+            var effectParameterX = note.EffectParameterX;
             var effectParameterY = note.EffectParameterY;
 
             // Are we changing the instrument being played?
@@ -429,15 +412,15 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             switch (note.Effect)
             {
                 // Arpeggio
-                case 0x00: 
+                case 0x00:
                     break; // tick effect
 
                 // Porta Up
-                case 0x01: 
+                case 0x01:
                     break; // tick effect
 
                 // Porta Down
-                case 0x02: 
+                case 0x02:
                     break; // tick effect
 
                 // Porta to Note (3) and Porta + Vol Slide (5)
@@ -475,7 +458,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                     break;
 
                 // Vibrato + Vol Slide
-                case 0x06: 
+                case 0x06:
                     break; // tick effect
 
                 // Tremolo
@@ -516,7 +499,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                     break;
 
                 // Volume Slide
-                case 0x0A: 
+                case 0x0A:
                     break; // tick effect
 
                 // Jump To Pattern
@@ -561,7 +544,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                     switch (effectParameterX)
                     {
                         // Set filter
-                        case 0x00: 
+                        case 0x00:
                             break; // not supported
 
                         // Fine porta up
@@ -575,7 +558,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                             break;
 
                         // Glissando 
-                        case 0x03: 
+                        case 0x03:
                             break; // not supported
 
 
@@ -655,7 +638,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                             break;
 
                         // Retrig Note
-                        case 0x09: 
+                        case 0x09:
                             break; // tick effect
 
                         // Fine volside up
@@ -671,7 +654,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                             break;
 
                         // Cut note
-                        case 0x0C: 
+                        case 0x0C:
                             break; // tick effect
 
                         // Delay note
@@ -685,7 +668,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                             break;
 
                         // Invert loop
-                        case 0x0F: 
+                        case 0x0F:
                             break; // not supported
                     }
 
@@ -755,6 +738,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                                 {
                                     period = SongConstants.ProTrackerPeriods[periodIndex1];
                                 }
+
                                 break;
                             case 2:
                                 var periodIndex2 = _trackData[track].PeriodIndex + effectParameterY + _song.Instruments[_trackData[track].InstrumentNumber].FineTune * 84;
@@ -762,6 +746,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                                 {
                                     period = SongConstants.ProTrackerPeriods[periodIndex2];
                                 }
+
                                 break;
                         }
 
@@ -1054,7 +1039,7 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
             // The axiom is that the instruments are sampled at a frequency of 22KHz.
             // One sample of the instrument can thus be repeated several times, or some
             // samples of the instrument can be completely omitted.
-            var deltapos = (int) (instrumentPlayingFrequencyInHz * (1 << FractionalBits) / WaveFormat.SampleRate);
+            var deltapos = (int)(instrumentPlayingFrequencyInHz * (1 << FractionalBits) / WaveFormat.SampleRate);
             if (deltapos == 0)
             {
                 continue;
@@ -1125,10 +1110,19 @@ public sealed partial class ModPlay : IModPlayer, IWaveProvider, IDisposable
                     if (ResamplingEnabled)
                     {
                         var sample1 = trackVolumeTable[_song.Instruments[_trackData[track].InstrumentNumber].Data[inInstrumentPosition >> FractionalBits]];
-                        var sample2 = trackVolumeTable[_song.Instruments[_trackData[track].InstrumentNumber].Data[(inInstrumentPosition >> FractionalBits) + 1]];
-                        var frac1 = inInstrumentPosition & ((1 << FractionalBits) - 1);
-                        var frac2 = (1 << FractionalBits) - frac1;
-                        volumeAdjustedSampleValue = (sample1 * frac2 + sample2 * frac1) >> FractionalBits;
+                        // Bounds check for the next sample to prevent IndexOutOfRangeException
+                        var nextPosition = (inInstrumentPosition >> FractionalBits) + 1;
+                        if (nextPosition < instrument.Data.Length)
+                        {
+                            var sample2 = trackVolumeTable[_song.Instruments[_trackData[track].InstrumentNumber].Data[nextPosition]];
+                            var frac1 = inInstrumentPosition & ((1 << FractionalBits) - 1);
+                            var frac2 = (1 << FractionalBits) - frac1;
+                            volumeAdjustedSampleValue = (sample1 * frac2 + sample2 * frac1) >> FractionalBits;
+                        }
+                        else
+                        {
+                            volumeAdjustedSampleValue = sample1;
+                        }
                     }
                     else
                     {
