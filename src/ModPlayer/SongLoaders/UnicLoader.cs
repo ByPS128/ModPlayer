@@ -161,7 +161,11 @@ public sealed class UnicLoader : Loaderbase, ISongLoader
                unused
         */
 
-        var noteData = new NoteData();
+        var noteData = new NoteData
+        {
+            PeriodIndex = -1,
+            Period = -1
+        };
 
         // Get the 3 bytes for this note
         int b0 = modFileDataSpan[index++];
